@@ -10,8 +10,6 @@ from bs4 import BeautifulSoup
 
 
 def getItemInfos(url):
-    # url = 'http://wotlk.cavernoftime.com/item=51225&power=true&ench=3832&gems=3518:3879'
-    # url = 'http://wotlk.cavernoftime.com/item=51225&power=true'
     response = requests.get(url).text
 
     # We can know if an item is enchanted from the url by matching 'ench='

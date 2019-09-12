@@ -7,7 +7,7 @@ import time
 import re
 
 from bs4 import BeautifulSoup
-from itemParser import getItemInfos
+from src.itemParser import getItemInfos
 
 
 def processItems(itemsList):
@@ -44,8 +44,10 @@ def processItems(itemsList):
                 equippedItems += 1
                 totalItemLvl += itemInfos['itemLevel']
 
-
-    avgItemLvl = "%.2f" % float(totalItemLvl/equippedItems)
+    if equippedItems != 0:
+        avgItemLvl = "%.2f" % float(totalItemLvl/equippedItems)
+    else:
+        avgItemLvl = 0
 
     return {'notEnchantedItems': notEnchantedItems, 'notGemmedItems': notGemmedItems, 'avgItemLvl': avgItemLvl}
 
@@ -54,12 +56,12 @@ def processList(providedList):
     items = []
 
     for item in providedList.findAll(class_ = 'text'):
-        items.append(' '.join(item.text.split()))
+        items.append(' '.join(item.text.split()).replace(' / ', '/'))
 
     return items
 
 
-def getCharInfos(url = 'http://armory.warmane.com/character/Pimar/Icecrown/summary'):
+def getCharInfos(url = 'http://armory.warmane.com/character/Rdyx/Icecrown/summary'):
     response = requests.get(url)
 
     # Check if server is up
@@ -78,24 +80,32 @@ def getCharInfos(url = 'http://armory.warmane.com/character/Pimar/Icecrown/summa
             charAndGuildName = charMainInfos.find(class_ = 'name').text.split(' ')
             itemsPath = html.findAll(class_ = 'item-slot')
             specsPath = html.find(class_ = 'specialization')
-            professions = []
+            professionsSummary = []
             professionsPath = html.findAll(class_ = 'profskills')
 
             charName = charAndGuildName.pop(0).strip()
-            guildName = ' '.join(charAndGuildName)
+            guildName = ' '.join(charAndGuildName) if charAndGuildName[0] != u'\xa0' else 'No Guild'
             lvlRaceClass = charMainInfos.find(class_ = 'level-race-class').text.strip()
 
+            professions = []
             for professionsType in professionsPath:
                 professions.append(processList(professionsType))
+
+            # Processing multiple arrays into one (1 array per professionType (main & secondary profs))
+            for professionType in professions:
+                for profession in professionType:
+                    professionsSummary.append(profession)
+
 
             getSpecializations = processList(specsPath)
             itemsCheck = processItems(itemsPath)
             
             summary = {
+                'url': url,
                 'charName': charName,
                 'guildName': guildName,
                 'lvlRaceClass': lvlRaceClass,
-                'professions': professions,
+                'professions': professionsSummary,
                 'specs': getSpecializations,
                 'itemsCheck': itemsCheck
             }
@@ -104,5 +114,4 @@ def getCharInfos(url = 'http://armory.warmane.com/character/Pimar/Icecrown/summa
     else:
         return 'Something wrong has happened with your provided informations. Please check and try again.'
 
-
-getCharInfos()
+# formatCharInfosResponse(getCharInfos())
