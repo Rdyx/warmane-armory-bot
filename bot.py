@@ -80,22 +80,21 @@ async def on_ready():
 async def changeGameMessage():
     await bot.wait_until_ready()
     
-    guildsNumber = 'used by {} guilds!'.format(len(bot.guilds))
-    
     counter = 0
+    
+    guildsNumber = 'used by {} guilds!'.format(len(bot.guilds))
     funMessage = discord.Game(name="Checking Chicks V0.2")
-    messages = [funMessage, guildsNumber]
+    helpMessage = '$$help'
+    messagesList = [funMessage, guildsNumber, helpMessage]
 
     # Used to change bot message every X seconds
     while not bot.is_closed():
-        turnNumber = (counter % 2)
-            
-        if turnNumber == 0:
+        if counter < len(messagesList):
             counter += 1
-        else:
-            counter -= 1
+        if counter == len(messagesList):
+            counter = 0
         
-        activity = discord.Game(name=messages[turnNumber])
+        activity = discord.Game(name=messagesList[counter])
         await bot.change_presence(activity = activity)
 
         await asyncio.sleep(30)
