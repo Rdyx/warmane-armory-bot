@@ -7,6 +7,7 @@ This bot is kinda simple and can be used to check if a char status such as:
    - Professions
    - Missing enchant/gem
    - Average Item Level
+   - Theorical max dps reachable with based on your current average item level, not very reliable, more for fun and check how you're doing
 
 You can also use it to check a guild status such as:
    - Faction
@@ -33,5 +34,7 @@ python3 bot.py
 $$help - Show help
 
 $$charsum [charName] [server](default to Icecrown)
+
+$$charsumfull [charName] [server](default to Icecrown)
 
 $$guildsum [guildName] [server](default to Icecrown)
