@@ -4,12 +4,14 @@ import random
 import discord
 import requests
 import urllib.request
+import asyncio
 
 from discord import Game
 from discord.ext import commands
 from dotenv import load_dotenv
-from src.armoryParser import getCharInfos
-from src.responseFormatting import formatCharInfosResponse, formatGuildInfosResponse
+from src.charsumParser import getCharInfos
+from src.charsumFullParser import getFullCharInfos
+from src.responseFormatting import formatCharInfosResponse, formatGuildInfosResponse, formatFullCharInfosResponse
 from src.guildSumParser import getGuildInfos
 
 load_dotenv()
@@ -17,7 +19,7 @@ token = os.getenv('DISCORD_TOKEN')
 bot = commands.Bot(command_prefix='$$')
 
 
-@bot.command(name='charsum', help='Get summary of a character (Default server is Icecrown)')
+@bot.command(name='charsum', help='Get a summary of a character (Default server is Icecrown)')
 async def charsum(ctx, charName=None, server='Icecrown'):
     if charName != None and server != None:
         msg = await ctx.send('Processing character **{}** from **{}**...'.format(charName, server))
@@ -35,7 +37,25 @@ async def charsum(ctx, charName=None, server='Icecrown'):
         """)
 
 
-@bot.command(name='guildsum', help='Get summary of a guild (if the guild has spaces in name, please use "" around it (Default server is Icecrown)')
+@bot.command(name='charsumfull', help='Get a detailled summary of a character (Default server is Icecrown)')
+async def charsumfull(ctx, charName=None, server='Icecrown'):
+    if charName != None and server != None:
+        msg = await ctx.send('Processing character **{}** from **{}**...'.format(charName, server))
+        
+        charName = charName.capitalize()
+        server = server.capitalize()
+
+        charUrl = 'http://armory.warmane.com/character/{}/{}/summary'.format(charName, server)
+        charInfos = getFullCharInfos(charUrl)
+
+        await msg.edit(content=formatFullCharInfosResponse(charInfos))
+    else:
+        await ctx.send("""
+            You must give a character name and a server name \n *I.E: !charsumfull wardyx icecrown*
+        """)
+
+
+@bot.command(name='guildsum', help='Get a summary of a guild (if the guild has spaces in name, please use "" around it (Default server is Icecrown)')
 async def guildSum(ctx, guildName=None, server='Icecrown'):
     if guildName != None and server != None:
         msg = await ctx.send('Processing guild **{}** from **{}**...'.format(guildName, server))
@@ -51,11 +71,35 @@ async def guildSum(ctx, guildName=None, server='Icecrown'):
             You must give a guild name and a server name \n *I.E: !guildsum "Stack and Slack" icecrown*
         """)
 
+
 @bot.event
 async def on_ready():
-    activity = discord.Game(name="Checking Chicks 0.1")
-    await bot.change_presence(status=discord.Status.idle, activity=activity)
     print("Logged in as " + bot.user.name)
 
 
+async def changeGameMessage():
+    await bot.wait_until_ready()
+    
+    guildsNumber = 'used by {} guilds!'.format(len(bot.guilds))
+    
+    counter = 0
+    funMessage = discord.Game(name="Checking Chicks V0.2")
+    messages = [funMessage, guildsNumber]
+
+    # Used to change bot message every X seconds
+    while not bot.is_closed():
+        turnNumber = (counter % 2)
+            
+        if turnNumber == 0:
+            counter += 1
+        else:
+            counter -= 1
+        
+        activity = discord.Game(name=messages[turnNumber])
+        await bot.change_presence(activity = activity)
+
+        await asyncio.sleep(30)
+
+
+bot.loop.create_task(changeGameMessage())
 bot.run(token)

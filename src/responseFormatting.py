@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import re
+from src.utils import classTypes
 
 
 def notOptimisedText(itemsList, checkedValue):
@@ -53,6 +54,64 @@ Average Item Level: {}
                 notOptimisedText(enchantsStatus, 'Enchant'),
                 notOptimisedText(gemsStatus, 'Gem'),
                 isOptimisedText
+            )
+
+        return text
+
+
+def statsSummaryText(lvlRaceClass, statsDict):
+    def formatStatArrayToStr(statType, statArray, newLine=False):
+        return '**{}**{}{}'.format(statType, ', '.join(statArray), ('\n' if newLine else ''))
+        # return '**' + statType + '**' + ', '.join(statArray) + ('\n' if newLine else '')
+
+    text = """**Stats Summary**
+{}{}
+""".format(
+                formatStatArrayToStr('Attributes: ', statsDict['Attributes'], True),
+                formatStatArrayToStr('Defense: ', statsDict['Defense']),
+            )
+
+    charClassType = classTypes(lvlRaceClass)
+
+    if charClassType == 'melee':
+        text += formatStatArrayToStr('Melee: ', statsDict['specRelated']['Melee'])
+    elif charClassType == 'ranged':
+        text += formatStatArrayToStr('Ranged: ', statsDict['specRelated']['Ranged'])
+    elif charClassType == 'caster':
+        text += formatStatArrayToStr('Spell: ', statsDict['specRelated']['Spell'])
+    else:
+        text += formatStatArrayToStr('Melee: ', statsDict['specRelated']['Melee'], True)
+        text += formatStatArrayToStr('Ranged: ', statsDict['specRelated']['Ranged'], True)
+        text += formatStatArrayToStr('Spell: ', statsDict['specRelated']['Spell'])
+
+    return text
+
+
+def theoricalDpsText(theoricalDpsDict):
+    text = '**Theorical Max Dps**\n'
+
+    for baseSpec, baseSpecDps in theoricalDpsDict['base'].items():
+        text += '**{}**: {}, **You**: {}'.format(baseSpec, baseSpecDps, theoricalDpsDict['calculated'][baseSpec]) + '\n'
+
+    return text
+
+
+def formatFullCharInfosResponse(charInfos):
+    if type(charInfos) is str:
+        return charInfos
+    else:
+        baseFormatting = formatCharInfosResponse(charInfos)
+
+        text = """
+{}
+{}
+
+{}
+*Please note that dps calculation is using a very basic ((maxDps/279)\*yourAverageItemLevel) formula and is not seriously reliable. 279 is the average max item level available*
+    """.format(
+                baseFormatting,
+                statsSummaryText(charInfos['lvlRaceClass'], charInfos['stats']),
+                theoricalDpsText(charInfos['theoricalDps'])
             )
 
         return text
