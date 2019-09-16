@@ -9,15 +9,16 @@ def notOptimisedText(itemsList, checkedValue):
     text = ''
 
     if len(itemsList) > 0:
-        text = 'Missing {} on: '.format(checkedValue)
+        text = 'Missing {} on ['.format(checkedValue)
+        
         for item in itemsList:
             text += '**{}**, '.format(item)
         
-        text = re.sub(r', $', '.', text, 0)
+        text = re.sub(r', $', ']', text, 0)
 
         return text
     else:
-        return 'Fully {}'.format(checkedValue)
+        return 'Full {}'.format(checkedValue)
 
 def formatCharInfosResponse(charInfos):
     if type(charInfos) is str:
@@ -34,20 +35,22 @@ def formatCharInfosResponse(charInfos):
 
         # Wtf this is super ugly but discord is taking tabs into account...
         text = """
-{}
+
 **{}** - **{}**
 {}
-{}
-{}
-Average Item Level: {}
-{}
-{}
+
+**Armory Link**: {}
+**Professions**: {}
+**Specs**: {}
+**Average Item Level**: {}
+**Enchant Status**: {}
+**Gems Status**: {}
 {}
             """.format(
-                charInfos['url'],
                 charInfos['charName'],
                 charInfos['guildName'],
                 charInfos['lvlRaceClass'],
+                charInfos['url'],
                 ', '.join(charInfos['professions']),
                 ', '.join(charInfos['specs']),
                 charInfos['itemsCheck']['avgItemLvl'],
@@ -87,11 +90,11 @@ def statsSummaryText(lvlRaceClass, statsDict):
     return text
 
 
-def theoricalDpsText(theoricalDpsDict):
+def theoricalDpsText(theoricalDpsDict, charItemLvl):
     text = '**Theorical Max Dps**\n'
 
     for baseSpec, baseSpecDps in theoricalDpsDict['base'].items():
-        text += '**{}**: {}, **You**: {}'.format(baseSpec, baseSpecDps, theoricalDpsDict['calculated'][baseSpec]) + '\n'
+        text += '**{}** (~279 ilvl): {}, **You** ({} ilvl): {}'.format(baseSpec, baseSpecDps, charItemLvl, theoricalDpsDict['calculated'][baseSpec]) + '\n'
 
     return text
 
@@ -107,11 +110,12 @@ def formatFullCharInfosResponse(charInfos):
 {}
 
 {}
-*Please note that dps calculation is using a very basic ((maxDps/279)\*yourAverageItemLevel) formula and is not seriously reliable. 279 is the average max item level available*
+*Please note that dps calculation is using a very basic formula ((maxDps/279)\*yourAverageItemLevel) and is not seriously reliable. 279 is the average max item level available.
+ICC's 30% Damages Buff is taken in account in maxDps.*
     """.format(
                 baseFormatting,
                 statsSummaryText(charInfos['lvlRaceClass'], charInfos['stats']),
-                theoricalDpsText(charInfos['theoricalDps'])
+                theoricalDpsText(charInfos['theoricalDps'], charInfos['itemsCheck']['avgItemLvl'])
             )
 
         return text

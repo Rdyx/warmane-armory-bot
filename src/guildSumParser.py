@@ -19,7 +19,7 @@ def getGuildInfos(url = 'http://armory.warmane.com/guild/Stack+and+Slack/Icecrow
 
         # Ensure guild is found before scrap anything else
         if len(html.findAll(string=re.compile(r'Page not found'))) > 0:
-            return 'Guild not found, please check your informations and try again.'
+            return 'Guild not found, please check your informations and try again. Remember to use "" if your guild has spaces in its name.'
         else:
             guildPath = html.find(class_ = 'information-left')
             guildName = guildPath.find(class_ = 'name').text.strip()

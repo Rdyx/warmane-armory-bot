@@ -9,8 +9,14 @@ import re
 from bs4 import BeautifulSoup
 
 
-def getItemInfos(url):
-    response = requests.get(url).text
+def getItemInfos(url, isBlacksmith=False):
+    if not isBlacksmith:
+        response = requests.get(url).text
+    else:
+        regex = r"&gems=\d+:\d+:\d+"
+        gemSlotsStatus = re.search(regex, url)[0].split(':')
+        url = re.sub(regex, '', url, 0)
+        response = requests.get(url).text
 
     # We can know if an item is enchanted from the url by matching 'ench='
     missingEnchant = False if re.search('ench=', url) else True
@@ -27,7 +33,14 @@ def getItemInfos(url):
     # Get item status (used to check if we got gems and retrieve item level)
     itemValues = item.select(itemPath)[1]
 
-    missingGems = len(itemValues.findAll(string=re.compile(r"Socket"))) > 1
+    if not isBlacksmith:
+        missingGems = len(itemValues.findAll(string=re.compile(r"Socket"))) > 1
+    else:
+        gemSlotsFilled = len([gem for gem in gemSlotsStatus if gem is not '0'])
+        gemSlots = len(itemValues.findAll(string=re.compile(r"Socket")))
+
+        missingGems = False if gemSlotsFilled == gemSlots else True
+        
     itemLevelText = itemValues.find(string=re.compile(r"Item Level"))
 
     itemLevel = int(itemLevelText.replace('Item Level ', '')) if itemLevelText else 0

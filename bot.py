@@ -77,12 +77,34 @@ async def on_ready():
     print("Logged in as " + bot.user.name)
 
 
+@bot.event
+async def on_command_error(ctx, error):
+    if isinstance(error, commands.CommandNotFound):
+        await ctx.send("No such command... :thinking:")
+    else:
+        raise error
+
+
+def getGuildsAndUsers():
+    guilds = bot.guilds
+    guildsNumber = len(bot.guilds)
+
+    usersNumber = 0
+    for guild in guilds:
+        usersNumber += len(guild.members)
+
+    return {'guildsNumber': guildsNumber, 'usersNumber': usersNumber}
+
+
 async def changeGameMessage():
     await bot.wait_until_ready()
     
     counter = 0
+
+    botInfos = getGuildsAndUsers()
     
-    guildsNumber = 'used by {} guilds!'.format(len(bot.guilds))
+    guildsNumber = 'used by {} guilds and {} users!'.format(botInfos['guildsNumber'], botInfos['usersNumber'])
+
     funMessage = discord.Game(name="Checking Chicks V0.2")
     helpMessage = '$$help'
     messagesList = [funMessage, guildsNumber, helpMessage]
@@ -97,7 +119,7 @@ async def changeGameMessage():
         activity = discord.Game(name=messagesList[counter])
         await bot.change_presence(activity = activity)
 
-        await asyncio.sleep(30)
+        await asyncio.sleep(1)
 
 
 bot.loop.create_task(changeGameMessage())
