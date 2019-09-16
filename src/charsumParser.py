@@ -10,7 +10,12 @@ from src.itemParser import getItemInfos
 from src.utils import getHtmlText
 
 
-def processItems(itemsList, isBlacksmith, isHunter):
+def professionEnchant(profession, minProfLvl):
+    profLvl = int(re.search(r'\d+', profession).group(0))
+    return True if profLvl >= minProfLvl else False
+
+
+def processItems(itemsList, isBlacksmith, isEnchanter, isHunter):
     notEnchantedItems = []
     notGemmedItems = []
     totalItemLvl = 0
@@ -20,6 +25,9 @@ def processItems(itemsList, isBlacksmith, isHunter):
     itemsToBeEnchant = ['Head', 'Shoulder', 'Back', 'Chest', 
                         'Wrist', 'Hands', 'Legs', 'Feet', 
                         'One-hand', 'Off Hand', 'Two-hand']
+
+    if isEnchanter:
+        itemsToBeEnchant.append('Finger')
     if isHunter:
         itemsToBeEnchant.append('Ranged')
 
@@ -95,6 +103,7 @@ def getCharInfos(url = 'http://armory.warmane.com/character/Wardyx/Icecrown/summ
         professionsSummary = []
         professionsPath = html.findAll(class_ = 'profskills')
         isBlacksmith = False
+        isEnchanter = False
 
         charName = charAndGuildName.pop(0).strip()
         guildName = ' '.join(charAndGuildName) if charAndGuildName[0] != u'\xa0' else 'No Guild'
@@ -107,15 +116,15 @@ def getCharInfos(url = 'http://armory.warmane.com/character/Wardyx/Icecrown/summ
         # Processing multiple arrays into one (1 array per professionType (main & secondary profs))
         for professionType in professions:
             for profession in professionType:
+                # We have to check blacksmith level to ensure the bonus gem slots are available
                 if 'Blacksmithing' in profession:
-                    # We have to check blacksmith level to ensure the bonus gem slots are available
-                    blacksmithLevel = int(re.search(r'\d+', profession)[0])
-                    if blacksmithLevel >= 400:
-                        isBlacksmith = True
+                    isBlacksmith = professionEnchant(profession, 400)
+                if 'Enchanting' in profession:
+                    isEnchanter = professionEnchant(profession, 400)
                 professionsSummary.append(profession)
 
         getSpecializations = processList(specsPath)
-        itemsCheck = processItems(itemsPath, isBlacksmith, isHunter)
+        itemsCheck = processItems(itemsPath, isBlacksmith, isEnchanter, isHunter)
         
         summary = {
             'url': url,

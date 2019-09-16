@@ -1,4 +1,6 @@
-# bot.py
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
 import os
 import random
 import discord
@@ -119,7 +121,7 @@ async def changeGameMessage():
         activity = discord.Game(name=messagesList[counter])
         await bot.change_presence(activity = activity)
 
-        await asyncio.sleep(1)
+        await asyncio.sleep(30)
 
 
 bot.loop.create_task(changeGameMessage())

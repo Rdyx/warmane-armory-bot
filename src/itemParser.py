@@ -14,7 +14,7 @@ def getItemInfos(url, isBlacksmith=False):
         response = requests.get(url).text
     else:
         regex = r"&gems=\d+:\d+:\d+"
-        gemSlotsStatus = re.search(regex, url)[0].split(':')
+        gemSlotsStatus = re.search(regex, url).group(0).split(':')
         url = re.sub(regex, '', url, 0)
         response = requests.get(url).text
 
