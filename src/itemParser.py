@@ -15,6 +15,7 @@ def getItemInfos(url, isBlacksmith=False):
     else:
         regex = r"&gems=\d+:\d+:\d+"
         gemSlotsStatus = re.search(regex, url).group(0).split(':')
+        gemSlotsStatus[0] = gemSlotsStatus[0].replace('&gems=', '')
         url = re.sub(regex, '', url, 0)
         response = requests.get(url).text
 
@@ -36,10 +37,10 @@ def getItemInfos(url, isBlacksmith=False):
     if not isBlacksmith:
         missingGems = len(itemValues.findAll(string=re.compile(r"Socket"))) > 1
     else:
-        gemSlotsFilled = len([gem for gem in gemSlotsStatus if gem is not '0'])
+        gemSlotsFilled = len([gem for gem in gemSlotsStatus if gem != '0'])
         gemSlots = len(itemValues.findAll(string=re.compile(r"Socket")))
 
-        missingGems = False if gemSlotsFilled == gemSlots else True
+        missingGems = False if (gemSlotsFilled == gemSlots) or (gemSlotsFilled != 0 and gemSlots == 0) else True
         
     itemLevelText = itemValues.find(string=re.compile(r"Item Level"))
 
