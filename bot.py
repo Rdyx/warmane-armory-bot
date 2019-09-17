@@ -15,6 +15,7 @@ from src.charsumParser import getCharInfos
 from src.charsumFullParser import getFullCharInfos
 from src.responseFormatting import formatCharInfosResponse, formatGuildInfosResponse, formatFullCharInfosResponse
 from src.guildSumParser import getGuildInfos
+from src.messageCmds import aboutMessage, welcomeMessage
 
 load_dotenv()
 token = os.getenv('DISCORD_TOKEN')
@@ -25,7 +26,7 @@ bot = commands.Bot(command_prefix='$$')
 async def charsum(ctx, charName=None, server='Icecrown'):
     if charName != None and server != None:
         msg = await ctx.send('Processing character **{}** from **{}**...'.format(charName, server))
-        
+
         charName = charName.capitalize()
         server = server.capitalize()
 
@@ -74,9 +75,27 @@ async def guildSum(ctx, guildName=None, server='Icecrown'):
         """)
 
 
+@bot.command(name='about', help='More info about this bot')
+async def about(ctx):
+    await ctx.send(aboutMessage(ctx.author.name))
+
+
+@bot.command(name='tip', help='Wanna buy me a coin? :D')
+async def tip(ctx):
+    paypalUrl = 'https://www.paypal.me/rdyx'
+    message = 'If you enjoy this bot and want to reward me, feel free to go to **{}** :)'.format(paypalUrl)
+    await ctx.send(message)
+
+
 @bot.event
 async def on_ready():
     print("Logged in as " + bot.user.name)
+
+
+@bot.event
+async def on_guild_join(guild):
+    message = welcomeMessage(len(bot.guilds), guild.owner)
+    await guild.owner.send(message)
 
 
 @bot.event
@@ -102,9 +121,8 @@ async def changeGameMessage():
     await bot.wait_until_ready()
     
     counter = 0
-
     botInfos = getGuildsAndUsers()
-    
+
     guildsNumber = 'used by {} guilds and {} users!'.format(botInfos['guildsNumber'], botInfos['usersNumber'])
 
     funMessage = discord.Game(name="Checking Chicks V0.2")
@@ -117,7 +135,7 @@ async def changeGameMessage():
             counter += 1
         if counter == len(messagesList):
             counter = 0
-        
+
         activity = discord.Game(name=messagesList[counter])
         await bot.change_presence(activity = activity)
 
