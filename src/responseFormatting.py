@@ -42,7 +42,7 @@ def formatCharInfosResponse(charInfos):
 **Armory Link**: {}
 **Professions**: {}
 **Specs**: {}
-**Average Item Level**: {}
+**Average Item Level**: {} - **Gearscore**: {}
 **Enchant Status**: {}
 **Gems Status**: {}
 {}
@@ -54,6 +54,7 @@ def formatCharInfosResponse(charInfos):
                 ', '.join(charInfos['professions']),
                 ', '.join(charInfos['specs']),
                 charInfos['itemsCheck']['avgItemLvl'],
+                charInfos['itemsCheck']['itemGearScore'],
                 notOptimisedText(enchantsStatus, 'Enchant'),
                 notOptimisedText(gemsStatus, 'Gem'),
                 isOptimisedText

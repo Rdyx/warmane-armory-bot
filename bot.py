@@ -114,7 +114,7 @@ def getGuildsAndUsers():
     for guild in guilds:
         usersNumber += len(guild.members)
 
-    return {'guildsNumber': guildsNumber, 'usersNumber': usersNumber}
+    return 'used by {} guilds and {} users!'.format(guildsNumber, usersNumber)
 
 
 async def changeGameMessage():
@@ -123,14 +123,15 @@ async def changeGameMessage():
     counter = 0
     botInfos = getGuildsAndUsers()
 
-    guildsNumber = 'used by {} guilds and {} users!'.format(botInfos['guildsNumber'], botInfos['usersNumber'])
-
     funMessage = discord.Game(name="Checking Chicks V0.2")
     helpMessage = '$$help'
-    messagesList = [funMessage, guildsNumber, helpMessage]
+    messagesList = [funMessage, botInfos, helpMessage]
 
     # Used to change bot message every X seconds
     while not bot.is_closed():
+        botInfos = getGuildsAndUsers()
+        messagesList[1] = botInfos
+        
         if counter < len(messagesList):
             counter += 1
         if counter == len(messagesList):
