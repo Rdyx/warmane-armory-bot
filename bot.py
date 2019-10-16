@@ -16,6 +16,7 @@ from src.charsumFullParser import getFullCharInfos
 from src.responseFormatting import formatCharInfosResponse, formatGuildInfosResponse, formatFullCharInfosResponse
 from src.guildSumParser import getGuildInfos
 from src.messageCmds import aboutMessage, welcomeMessage
+from src.utils import commandsCounterIncrement, getCommandCounter
 
 load_dotenv()
 token = os.getenv('DISCORD_TOKEN')
@@ -32,6 +33,7 @@ async def charsum(ctx, charName=None, server='Icecrown'):
 
         charUrl = 'http://armory.warmane.com/character/{}/{}/summary'.format(charName, server)
         charInfos = getCharInfos(charUrl)
+        commandsCounterIncrement()
 
         await msg.edit(content=formatCharInfosResponse(charInfos))
     else:
@@ -50,6 +52,7 @@ async def charsumfull(ctx, charName=None, server='Icecrown'):
 
         charUrl = 'http://armory.warmane.com/character/{}/{}/summary'.format(charName, server)
         charInfos = getFullCharInfos(charUrl)
+        commandsCounterIncrement()
 
         await msg.edit(content=formatFullCharInfosResponse(charInfos))
     else:
@@ -67,6 +70,7 @@ async def guildSum(ctx, guildName=None, server='Icecrown'):
         guildName = guildName.replace(' ', '+')
         guildUrl = 'http://armory.warmane.com/guild/{}/{}/boss-fights'.format(guildName, server)
         guildInfos = getGuildInfos(guildUrl)
+        commandsCounterIncrement()
 
         await msg.edit(content=formatGuildInfosResponse(guildInfos))
     else:
@@ -77,6 +81,7 @@ async def guildSum(ctx, guildName=None, server='Icecrown'):
 
 @bot.command(name='about', help='More info about this bot')
 async def about(ctx):
+    commandsCounterIncrement()
     await ctx.send(aboutMessage(ctx.author.name))
 
 
@@ -84,6 +89,7 @@ async def about(ctx):
 async def tip(ctx):
     paypalUrl = 'https://www.paypal.me/rdyx'
     message = 'If you enjoy this bot and want to reward me, feel free to go to **{}** :)'.format(paypalUrl)
+    commandsCounterIncrement()
     await ctx.send(message)
 
 
@@ -117,20 +123,29 @@ def getGuildsAndUsers():
     return 'used by {} guilds and {} users!'.format(guildsNumber, usersNumber)
 
 
+def getCommandCounterMessage():
+    commandCounter = getCommandCounter()
+
+    return '{} commands used!'.format(commandCounter)
+
+
 async def changeGameMessage():
     await bot.wait_until_ready()
     
     counter = 0
     botInfos = getGuildsAndUsers()
+    commandCounter = getCommandCounterMessage()
 
-    funMessage = discord.Game(name="Checking Chicks V0.2")
+    funMessage = discord.Game(name="Checking Chicks V0.4")
     helpMessage = '$$help'
-    messagesList = [funMessage, botInfos, helpMessage]
+    messagesList = [funMessage, botInfos, helpMessage, commandCounter]
 
     # Used to change bot message every X seconds
     while not bot.is_closed():
         botInfos = getGuildsAndUsers()
+        commandCounter = getCommandCounterMessage()
         messagesList[1] = botInfos
+        messagesList[3] = commandCounter
         
         if counter < len(messagesList):
             counter += 1

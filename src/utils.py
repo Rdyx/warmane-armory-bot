@@ -1,9 +1,13 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+import os
 import re
 import requests
 from bs4 import BeautifulSoup
+
+scriptPath = os.path.dirname(__file__)
+commandCounterFilePath = os.path.join(scriptPath, '../data/commandCounter.txt')
 
 
 def classChecker(characterLvlRaceClass, classList, returnedValue):
@@ -24,6 +28,29 @@ def classTypes(lvlRaceClass):
 
         if charClass != None:
             return charClass
+
+
+def commandsCounterIncrement():
+    # Increment counter, if file doesn't exists, create it
+    try:
+        with open(commandCounterFilePath, 'r+') as f:
+            counter = int(f.readline()) + 1
+            f.seek(0)
+            f.write(str(counter))
+    except:
+        with open(commandCounterFilePath, 'w') as f:
+            f.write('1')
+            f.close()
+
+def getCommandCounter():
+    # Get counter, if file doesn't exists, create it
+    try:
+        with open(commandCounterFilePath, 'r') as f:
+            return f.read()
+    except:
+        with open(commandCounterFilePath, 'w') as f:
+            f.write('0')
+            f.close()
 
 
 def getHtmlText(url):
