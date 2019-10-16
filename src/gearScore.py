@@ -10,7 +10,7 @@ def createGearScoreDictionnary():
     # Rare, Epic
     # We use this because items with ilvl 200 can be Rare, Epic or Legendary
     itemRarities = ['3', '4', '5']
-    itemLevels = [200, 213, 219, 226, 232, 239, 245, 251, 258, 264, 271, 277, 284]
+    itemLevels = [200, 213, 219, 226, 232, 239, 245, 251, 258, 264, 271, 272, 277, 284]
     itemSlots = ['Head', 'Chest', 'Legs', 'Main Hand',
         'One-hand', 'Off Hand', 'Held In Off-Hand', 'Shoulder',
         'Hands', 'Waist', 'Feet', 'Neck',
@@ -19,19 +19,19 @@ def createGearScoreDictionnary():
     legendarySlots = ['Main Hand', 'Two-Hand']
 
     highestGsSlotsNames = ['Head', 'Chest', 'Legs', 'Main Hand', 'One-hand', 'Off Hand', 'Held In Off-Hand']
-    highestGsSlotsValues = [271, 310, 348, 365, 385, 402, 422, 439, 457, 477, 494, 514, 531, 551]
+    highestGsSlotsValues = [271, 310, 348, 365, 385, 402, 422, 439, 457, 477, 494, 514, 0, 531, 551]
 
     secondhighestGsSlotsNames = ['Shoulder', 'Hands', 'Waist', 'Feet']
-    secondhighestGsSlotsValues = [203, 233, 261, 274, 289, 301, 316, 329, 342, 357, 370, 385, 398, 413]
+    secondhighestGsSlotsValues = [203, 233, 261, 274, 289, 301, 316, 329, 342, 357, 370, 385, 0, 398, 413]
 
     middleGsSlotsNames = ['Neck', 'Back', 'Wrist', 'Finger', 'Trinket']
-    middleGsSlotsValues = [152, 174, 195, 205, 216, 226, 237, 247, 257, 268, 278, 289, 298, 310]
+    middleGsSlotsValues = [152, 174, 195, 205, 216, 226, 237, 247, 257, 268, 278, 289, 290, 298, 310]
 
     rangedGsSlotNames = ['Ranged', 'Relic', 'Thrown']
-    rangedGsSlotValues = [86, 98, 110, 115, 121, 127, 133, 139, 144, 150, 156, 162, 168, 174]
+    rangedGsSlotValues = [86, 98, 110, 115, 121, 127, 133, 139, 144, 150, 156, 162, 0, 168, 174]
 
     twoHandGsSlotName = ['Two-hand']
-    twoHandGsSlotValues = [543, 621, 696, 730, 770, 805, 845, 879, 914, 954, 988, 1028, 1062, 1103]
+    twoHandGsSlotValues = [543, 621, 696, 730, 770, 805, 845, 879, 914, 954, 988, 1028, 0, 1062, 1103]
 
     # Those items are sharing ilvl with epics equivalent but have more gs due to their quality difference
     legendaryGsItemsNames = ['Val\'anyr, Hammer of Ancient Kings', 'Shadowmourne']
