@@ -93,6 +93,14 @@ async def tip(ctx):
     await ctx.send(message)
 
 
+@bot.command(name='bischecker', help='BiS lists for every class with quick search')
+async def bischecker(ctx):
+    bisCheckerUrl = 'https://rdyx.github.io/warmane-bis-class-checker/'
+    message = 'Please follow this link: {} :)'.format(bisCheckerUrl)
+    commandsCounterIncrement()
+    await ctx.send(message)
+
+
 @bot.event
 async def on_ready():
     print("Logged in as " + bot.user.name)
