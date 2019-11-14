@@ -101,6 +101,14 @@ async def bischecker(ctx):
     await ctx.send(message)
 
 
+@bot.command(name='rand', help='Rand between a defined interval (default 1-100)')
+async def rand(ctx, min=1, max=100):
+    randomNumber = random.randint(min, max)
+    message = '{} rolls **{}** ({}-{})'.format(ctx.author.name, randomNumber, min, max)
+    commandsCounterIncrement()
+    await ctx.send(message)
+
+
 @bot.event
 async def on_ready():
     print("Logged in as " + bot.user.name)
