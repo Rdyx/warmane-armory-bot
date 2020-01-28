@@ -1,24 +1,20 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
+""" Character 'full' parser """
 
-import requests
-import urllib.request
 import re
 
-from bs4 import BeautifulSoup
-
 from src.charsumParser import getCharInfos
-from src.utils import getHtmlText, classTypes, theoricalMaxDps
+from src.utils import getHtmlText, getTheoricalMaxDps
 
 
 def sanitizeStats(charStatsInfo):
+    """ Make text (character statistics) human readable """
     sortedDivs = {}
 
     # Processing <div class="stub"/> split
-    stubDivs = charStatsInfo.findAll(class_ = 'text')
+    stubDivs = charStatsInfo.findAll(class_='text')
 
     for div in stubDivs:
-        # Ugly but the way the website is formatted is forcing it... 
+        # Ugly but the way the website is formatted is forcing it...
         # What a good idea to use <br/> to place text blocks
         statCategory1 = div.contents[0].strip()
         statCategoryValues1 = div.contents[3].text.split('\n')
@@ -37,34 +33,42 @@ def sanitizeStats(charStatsInfo):
     return sortedDivs
 
 
-def getFullCharInfos(url = 'http://armory.warmane.com/character/Rdyx/Icecrown/summary'):
+def getFullCharInfos(url='http://armory.warmane.com/character/Rdyx/Icecrown/summary'):
+    """ Get character stats from url request """
+
     html = getHtmlText(url)
-    
-    if type(html) is str:
+
+    if isinstance(html, str):
         return html
     # Ensure char is found before scrap anything else
-    elif len(html.findAll(string=re.compile(r'Page not found'))) > 0:
+    if len(html.findAll(string=re.compile(r'Page not found'))) > 0:
         return 'Character not found, please check your informations and try again.'
-    else:
-        # Process basics info same as $$charsum then we get more data from page and process it
-        charBaseInfos = getCharInfos(url, html)
-        charClassType = classTypes(charBaseInfos['lvlRaceClass'])
-        charStatsInfo = html.find(class_ = 'character-stats')
-        charStats = sanitizeStats(charStatsInfo)
 
-        statsToReturn = {'stats': {
-            'Attributes': charStats['Attributes'], 'Defense': charStats['Defense'], 'specRelated': {}
-            }
+    # Process basics info same as $$charsum then we get more data from page and process it
+    charBaseInfos = getCharInfos(url, html)
+    # class_ is special word for beautyfull soup so we can get some element in html
+    # pylint: disable=unexpected-keyword-arg, no-value-for-parameter
+    charStatsInfo = html.find(class_='character-stats')
+    charStats = sanitizeStats(charStatsInfo)
+
+    statsToReturn = {
+        'stats':
+        {
+            'Attributes': charStats['Attributes'],
+            'Defense': charStats['Defense'],
+            'specRelated': {},
         }
+    }
 
-        statsToReturn['stats']['specRelated']['Melee'] = charStats['Melee']
-        statsToReturn['stats']['specRelated']['Ranged'] = charStats['Ranged']
-        statsToReturn['stats']['specRelated']['Spell'] = charStats['Spell']
+    statsToReturn['stats']['specRelated']['Melee'] = charStats['Melee']
+    statsToReturn['stats']['specRelated']['Ranged'] = charStats['Ranged']
+    statsToReturn['stats']['specRelated']['Spell'] = charStats['Spell']
 
-        statsToReturn['theoricalDps'] = theoricalMaxDps(float(charBaseInfos['itemsCheck']['avgItemLvl']), charBaseInfos['lvlRaceClass'])
+    statsToReturn['theoricalDps'] = getTheoricalMaxDps(
+        float(charBaseInfos['itemsCheck']['avgItemLvl']), charBaseInfos['lvlRaceClass'])
 
-        # Enriching base dict with new data
-        charBaseInfos = dict(charBaseInfos)
-        charBaseInfos.update(statsToReturn)
+    # Enriching base dict with new data
+    charBaseInfos = dict(charBaseInfos)
+    charBaseInfos.update(statsToReturn)
 
-        return charBaseInfos
+    return charBaseInfos

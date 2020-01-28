@@ -1,81 +1,70 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
+""" Formatting bot's response to commands functions """
 
 import re
-from src.utils import classTypes
+from src.utils import getClassTypes
 
 
 def notOptimisedText(itemsList, checkedValue):
+    """ Avoid DRY about optimisation message """
     text = ''
 
     if len(itemsList) > 0:
         text = 'Missing {} on ['.format(checkedValue)
-        
+
         for item in itemsList:
             text += '**{}**, '.format(item)
-        
+
         text = re.sub(r', $', ']', text, 0)
 
         return text
-    else:
-        return 'Full {}'.format(checkedValue)
+
+    return 'Full {}'.format(checkedValue)
+
 
 def formatCharInfosResponse(charInfos):
-    if type(charInfos) is str:
+    """ Formatting Character informations for humand readability """
+    if isinstance(charInfos, str):
         return charInfos
+
+    isOptimisedText = ''
+    enchantsStatus = charInfos['itemsCheck']['notEnchantedItems']
+    gemsStatus = charInfos['itemsCheck']['notGemmedItems']
+
+    if len(enchantsStatus) == 0 and len(gemsStatus) == 0:
+        isOptimisedText = 'This char seems optimised :white_check_mark:'
     else:
-        isOptimisedText = ''
-        enchantsStatus = charInfos['itemsCheck']['notEnchantedItems']
-        gemsStatus = charInfos['itemsCheck']['notGemmedItems']
+        isOptimisedText = 'This char is not optimised :x:'
 
-        if len(enchantsStatus) == 0 and len(gemsStatus) == 0:
-            isOptimisedText = 'This char seems optimised :white_check_mark:'
-        else:
-            isOptimisedText = 'This char is not optimised :x:'
+    # Wtf this is super ugly but discord is taking tabs into account...
+    text = f"""
 
-        # Wtf this is super ugly but discord is taking tabs into account...
-        text = """
+**{charInfos['charName']}** - **{charInfos['guildName']}**
+{charInfos['lvlRaceClass']}
 
-**{}** - **{}**
-{}
+**Armory Link**: {charInfos['url']}
+**Professions**: {', '.join(charInfos['professions'])}
+**Specs**: {', '.join(charInfos['specs'])}
+**Average Item Level**: {charInfos['itemsCheck']['avgItemLvl']} - **Gearscore**: {charInfos['itemsCheck']['itemGearScore']}
+**Enchant Status**: {notOptimisedText(enchantsStatus, 'Enchant')}
+**Gems Status**: {notOptimisedText(enchantsStatus, 'Gem')}
+{isOptimisedText}
+        """
 
-**Armory Link**: {}
-**Professions**: {}
-**Specs**: {}
-**Average Item Level**: {} - **Gearscore**: {}
-**Enchant Status**: {}
-**Gems Status**: {}
-{}
-            """.format(
-                charInfos['charName'],
-                charInfos['guildName'],
-                charInfos['lvlRaceClass'],
-                charInfos['url'],
-                ', '.join(charInfos['professions']),
-                ', '.join(charInfos['specs']),
-                charInfos['itemsCheck']['avgItemLvl'],
-                charInfos['itemsCheck']['itemGearScore'],
-                notOptimisedText(enchantsStatus, 'Enchant'),
-                notOptimisedText(gemsStatus, 'Gem'),
-                isOptimisedText
-            )
-
-        return text
+    return text
 
 
-def statsSummaryText(lvlRaceClass, statsDict):
+def getStatsSummaryText(lvlRaceClass, statsDict):
+    """ Get and format character statistics string """
+
     def formatStatArrayToStr(statType, statArray, newLine=False):
         return '**{}**{}{}'.format(statType, ', '.join(statArray), ('\n' if newLine else ''))
         # return '**' + statType + '**' + ', '.join(statArray) + ('\n' if newLine else '')
 
-    text = """**Stats Summary**
-{}{}
-""".format(
-                formatStatArrayToStr('Attributes: ', statsDict['Attributes'], True),
-                formatStatArrayToStr('Defense: ', statsDict['Defense']),
-            )
+    text = f"""**Stats Summary**
+{formatStatArrayToStr('Attributes: ', statsDict['Attributes'], True)}{formatStatArrayToStr('Defense: ', statsDict['Defense'])}
+"""
 
-    charClassType = classTypes(lvlRaceClass)
+    charClassType = getClassTypes(lvlRaceClass)
 
     if charClassType == 'melee':
         text += formatStatArrayToStr('Melee: ', statsDict['specRelated']['Melee'])
@@ -91,52 +80,48 @@ def statsSummaryText(lvlRaceClass, statsDict):
     return text
 
 
-def theoricalDpsText(theoricalDpsDict, charItemLvl):
+def getTheoricalDpsText(theoricalDpsDict, charItemLvl):
+    """ Get and format theorical dps string """
     text = '**Theorical Max Dps**\n'
 
-    for baseSpec, baseSpecDps in theoricalDpsDict['base'].items():
-        text += '**{}** (~279 ilvl): {}, **You** ({} ilvl): {}'.format(baseSpec, baseSpecDps, charItemLvl, theoricalDpsDict['calculated'][baseSpec]) + '\n'
+    for baseSpec, baseMaxSpecDps in theoricalDpsDict['base'].items():
+        charMaxTheoricalDps = theoricalDpsDict['calculated'][baseSpec] + '\n'
+        text += f'**{baseSpec}** (~279 ilvl): {baseMaxSpecDps}, \
+            **You** ({charItemLvl} ilvl): {charMaxTheoricalDps}'
 
     return text
 
 
 def formatFullCharInfosResponse(charInfos):
-    if type(charInfos) is str:
+    """ Formatting Full Character informations for humand readability """
+    if isinstance(charInfos, str):
         return charInfos
-    else:
-        baseFormatting = formatCharInfosResponse(charInfos)
 
-        text = """
-{}
-{}
+    baseFormatting = formatCharInfosResponse(charInfos)
 
-{}
-*Please note that dps calculation is using a very basic formula ((maxDps/279)\*yourAverageItemLevel) and is not seriously reliable. 279 is the average max item level available.
+    text = f"""
+{baseFormatting}
+{getStatsSummaryText(charInfos['lvlRaceClass'], charInfos['stats'])}
+
+{getTheoricalDpsText(charInfos['theoricalDps'], charInfos['itemsCheck']['avgItemLvl'])}
+*Please note that dps calculation is using a very basic formula ((maxDps/279)\\*yourAverageItemLevel) and is not seriously reliable. 279 is the average max item level available.
 ICC's 30% Damages Buff is taken in account in maxDps.*
-    """.format(
-                baseFormatting,
-                statsSummaryText(charInfos['lvlRaceClass'], charInfos['stats']),
-                theoricalDpsText(charInfos['theoricalDps'], charInfos['itemsCheck']['avgItemLvl'])
-            )
+"""
 
-        return text
+    return text
 
 
 def formatGuildInfosResponse(guildInfos):
-    if type(guildInfos) is str:
+    """ Formatting Guild informations for humand readability """
+    if isinstance(guildInfos, str):
         return guildInfos
-    else:
-        # Wtf this is super ugly but discord is taking tabs into account when posting...
-        text = """
-{}
-**{}**
-{}
-{}
-            """.format(
-                guildInfos['url'],
-                guildInfos['guildName'],
-                guildInfos['guildStatus'],
-                guildInfos['guildPoints']
-            )
 
-        return text
+    # Wtf this is super ugly but discord is taking tabs into account when posting...
+    text = f"""
+{guildInfos['url']}
+**{guildInfos['guildName']}**
+{guildInfos['guildStatus']}
+{guildInfos['guildPoints']}
+        """
+
+    return text

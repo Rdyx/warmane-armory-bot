@@ -1,31 +1,32 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
+""" Bot Core """
 
 import os
 import random
-import discord
-import requests
-import urllib.request
 import asyncio
+import discord
 
-from discord import Game
 from discord.ext import commands
 from dotenv import load_dotenv
 from src.charsumParser import getCharInfos
 from src.charsumFullParser import getFullCharInfos
-from src.responseFormatting import formatCharInfosResponse, formatGuildInfosResponse, formatFullCharInfosResponse
+from src.responseFormatting import (
+    formatCharInfosResponse,
+    formatGuildInfosResponse,
+    formatFullCharInfosResponse,
+)
 from src.guildSumParser import getGuildInfos
 from src.messageCmds import aboutMessage, welcomeMessage
-from src.utils import commandsCounterIncrement, getCommandCounter
+from src.utils import incrementCommandsCounter, getCommandCounter
 
 load_dotenv()
-token = os.getenv('DISCORD_TOKEN')
-bot = commands.Bot(command_prefix='$$')
+BOT_TOKEN = os.getenv('DISCORD_DEV_TOKEN')
+BOT = commands.Bot(command_prefix='$')
 
 
-@bot.command(name='charsum', help='Get a summary of a character (Default server is Icecrown)')
+@BOT.command(name='charsum', help='Get a summary of a character (Default server is Icecrown)')
 async def charsum(ctx, charName=None, server='Icecrown'):
-    if charName != None and server != None:
+    """ Character Summary """
+    if charName is not None and server is not None:
         msg = await ctx.send('Processing character **{}** from **{}**...'.format(charName, server))
 
         charName = charName.capitalize()
@@ -33,7 +34,7 @@ async def charsum(ctx, charName=None, server='Icecrown'):
 
         charUrl = 'http://armory.warmane.com/character/{}/{}/summary'.format(charName, server)
         charInfos = getCharInfos(charUrl)
-        commandsCounterIncrement()
+        incrementCommandsCounter()
 
         await msg.edit(content=formatCharInfosResponse(charInfos))
     else:
@@ -42,17 +43,22 @@ async def charsum(ctx, charName=None, server='Icecrown'):
         """)
 
 
-@bot.command(name='charsumfull', help='Get a detailled summary of a character (Default server is Icecrown)')
+@BOT.command(
+    name='charsumfull',
+    help='Get a detailled summary of a character (Default server is Icecrown)'
+)
 async def charsumfull(ctx, charName=None, server='Icecrown'):
-    if charName != None and server != None:
+    """ More detailled character summary """
+    if charName is not None and server is not None:
         msg = await ctx.send('Processing character **{}** from **{}**...'.format(charName, server))
-        
+
         charName = charName.capitalize()
         server = server.capitalize()
 
-        charUrl = 'http://armory.warmane.com/character/{}/{}/summary'.format(charName, server)
+        charUrl = 'http://armory.warmane.com/character/{}/{}/summary'.format(
+            charName, server)
         charInfos = getFullCharInfos(charUrl)
-        commandsCounterIncrement()
+        incrementCommandsCounter()
 
         await msg.edit(content=formatFullCharInfosResponse(charInfos))
     else:
@@ -61,16 +67,22 @@ async def charsumfull(ctx, charName=None, server='Icecrown'):
         """)
 
 
-@bot.command(name='guildsum', help='Get a summary of a guild (if the guild has spaces in name, please use "" around it (Default server is Icecrown)')
+@BOT.command(
+    name='guildsum',
+    help='Get a summary of a guild (if the guild has spaces in name, please use "" around it \
+        (Default server is Icecrown)'
+)
 async def guildSum(ctx, guildName=None, server='Icecrown'):
-    if guildName != None and server != None:
+    """ Guild summary """
+    if guildName is not None and server is not None:
         msg = await ctx.send('Processing guild **{}** from **{}**...'.format(guildName, server))
 
         # Url for guilds are replacing spaces with +
         guildName = guildName.replace(' ', '+')
-        guildUrl = 'http://armory.warmane.com/guild/{}/{}/boss-fights'.format(guildName, server)
+        guildUrl = 'http://armory.warmane.com/guild/{}/{}/boss-fights'.format(
+            guildName, server)
         guildInfos = getGuildInfos(guildUrl)
-        commandsCounterIncrement()
+        incrementCommandsCounter()
 
         await msg.edit(content=formatGuildInfosResponse(guildInfos))
     else:
@@ -79,48 +91,58 @@ async def guildSum(ctx, guildName=None, server='Icecrown'):
         """)
 
 
-@bot.command(name='about', help='More info about this bot')
+@BOT.command(name='about', help='More info about this bot')
 async def about(ctx):
-    commandsCounterIncrement()
+    """ About this bot message """
+    incrementCommandsCounter()
     await ctx.send(aboutMessage(ctx.author.name))
 
 
-@bot.command(name='tip', help='Wanna buy me a coin? :D')
+@BOT.command(name='tip', help='Wanna buy me a coin? :D')
 async def tip(ctx):
+    """ Creator's Tip bot message """
     paypalUrl = 'https://www.paypal.me/rdyx'
-    message = 'If you enjoy this bot and want to reward me, feel free to go to **{}** :)'.format(paypalUrl)
-    commandsCounterIncrement()
+    message = 'If you enjoy this bot and want to reward me, feel free to go to **{}** :)'.format(
+        paypalUrl)
+    incrementCommandsCounter()
     await ctx.send(message)
 
 
-@bot.command(name='bischecker', help='BiS lists for every class with quick search')
+@BOT.command(name='bischecker', help='BiS lists for every class with quick search')
 async def bischecker(ctx):
+    """ URL link to BiS class checker """
     bisCheckerUrl = 'https://rdyx.github.io/warmane-bis-class-checker/'
     message = 'Please follow this link: {} :)'.format(bisCheckerUrl)
-    commandsCounterIncrement()
+    incrementCommandsCounter()
     await ctx.send(message)
 
 
-@bot.command(name='rand', help='Rand between a defined interval (default 1-100)')
-async def rand(ctx, min=1, max=100):
-    randomNumber = random.randint(min, max)
-    message = '{} rolls **{}** ({}-{})'.format(ctx.author.name, randomNumber, min, max)
-    commandsCounterIncrement()
+@BOT.command(name='rand', help='Rand between a defined interval (default 1-100)')
+async def rand(ctx, minNumber=1, maxNumber=100):
+    """ Random number generator """
+    randomNumber = random.randint(minNumber, maxNumber)
+    message = '{} rolls **{}** ({}-{})'.format(
+        ctx.author.name, randomNumber, minNumber, maxNumber,
+    )
+    incrementCommandsCounter()
     await ctx.send(message)
 
 
-@bot.event
+@BOT.event
+# pylint: disable=invalid-name, missing-function-docstring
 async def on_ready():
-    print("Logged in as " + bot.user.name)
+    print("Logged in as " + BOT.user.name)
 
 
-@bot.event
+@BOT.event
+# pylint: disable=invalid-name, missing-function-docstring
 async def on_guild_join(guild):
-    message = welcomeMessage(len(bot.guilds), guild.owner)
+    message = welcomeMessage(len(BOT.guilds), guild.owner)
     await guild.owner.send(message)
 
 
-@bot.event
+@BOT.event
+# pylint: disable=invalid-name, missing-function-docstring
 async def on_command_error(ctx, error):
     if isinstance(error, commands.CommandNotFound):
         await ctx.send("No such command... :thinking:")
@@ -129,8 +151,9 @@ async def on_command_error(ctx, error):
 
 
 def getGuildsAndUsers():
-    guilds = bot.guilds
-    guildsNumber = len(bot.guilds)
+    """ Get number of guilds and users using this bot """
+    guilds = BOT.guilds
+    guildsNumber = len(BOT.guilds)
 
     usersNumber = 0
     for guild in guilds:
@@ -140,14 +163,16 @@ def getGuildsAndUsers():
 
 
 def getCommandCounterMessage():
+    """ Get command counter tracker """
     commandCounter = getCommandCounter()
 
     return '{} commands used!'.format(commandCounter)
 
 
 async def changeGameMessage():
-    await bot.wait_until_ready()
-    
+    """ Game message rotation (displayed under bot name) """
+    await BOT.wait_until_ready()
+
     counter = 0
     botInfos = getGuildsAndUsers()
     commandCounter = getCommandCounterMessage()
@@ -157,22 +182,22 @@ async def changeGameMessage():
     messagesList = [funMessage, botInfos, helpMessage, commandCounter]
 
     # Used to change bot message every X seconds
-    while not bot.is_closed():
+    while not BOT.is_closed():
         botInfos = getGuildsAndUsers()
         commandCounter = getCommandCounterMessage()
         messagesList[1] = botInfos
         messagesList[3] = commandCounter
-        
+
         if counter < len(messagesList):
             counter += 1
         if counter == len(messagesList):
             counter = 0
 
         activity = discord.Game(name=messagesList[counter])
-        await bot.change_presence(activity = activity)
+        await BOT.change_presence(activity=activity)
 
         await asyncio.sleep(30)
 
 
-bot.loop.create_task(changeGameMessage())
-bot.run(token)
+BOT.loop.create_task(changeGameMessage())
+BOT.run(BOT_TOKEN)
