@@ -36,19 +36,29 @@ def formatCharInfosResponse(charInfos):
         isOptimisedText = 'This char is not optimised :x:'
 
     # Wtf this is super ugly but discord is taking tabs into account...
-    text = f"""
-
-**{charInfos['charName']}** - **{charInfos['guildName']}**
-{charInfos['lvlRaceClass']}
-
-**Armory Link**: {charInfos['url']}
-**Professions**: {', '.join(charInfos['professions'])}
-**Specs**: {', '.join(charInfos['specs'])}
-**Average Item Level**: {charInfos['itemsCheck']['avgItemLvl']} - **Gearscore**: {charInfos['itemsCheck']['itemGearScore']}
-**Enchant Status**: {notOptimisedText(enchantsStatus, 'Enchant')}
-**Gems Status**: {notOptimisedText(enchantsStatus, 'Gem')}
-{isOptimisedText}
-        """
+    text = """
+**{}** - **{}**
+{}
+**Armory Link**: {}
+**Professions**: {}
+**Specs**: {}
+**Average Item Level**: {} - **Gearscore**: {}
+**Enchant Status**: {}
+**Gems Status**: {}
+{}
+    """.format(
+        charInfos['charName'],
+        charInfos['guildName'],
+        charInfos['lvlRaceClass'],
+        charInfos['url'],
+        ', '.join(charInfos['professions']),
+        ', '.join(charInfos['specs']),
+        charInfos['itemsCheck']['avgItemLvl'],
+        charInfos['itemsCheck']['itemGearScore'],
+        notOptimisedText(enchantsStatus, 'Enchant'),
+        notOptimisedText(gemsStatus, 'Gem'),
+        isOptimisedText
+    )
 
     return text
 
@@ -60,9 +70,12 @@ def getStatsSummaryText(lvlRaceClass, statsDict):
         return '**{}**{}{}'.format(statType, ', '.join(statArray), ('\n' if newLine else ''))
         # return '**' + statType + '**' + ', '.join(statArray) + ('\n' if newLine else '')
 
-    text = f"""**Stats Summary**
-{formatStatArrayToStr('Attributes: ', statsDict['Attributes'], True)}{formatStatArrayToStr('Defense: ', statsDict['Defense'])}
-"""
+    text = """**Stats Summary**
+{}{}
+""".format(
+        formatStatArrayToStr('Attributes: ', statsDict['Attributes'], True),
+        formatStatArrayToStr('Defense: ', statsDict['Defense']),
+    )
 
     charClassType = getClassTypes(lvlRaceClass)
 
@@ -84,10 +97,10 @@ def getTheoricalDpsText(theoricalDpsDict, charItemLvl):
     """ Get and format theorical dps string """
     text = '**Theorical Max Dps**\n'
 
-    for baseSpec, baseMaxSpecDps in theoricalDpsDict['base'].items():
-        charMaxTheoricalDps = theoricalDpsDict['calculated'][baseSpec] + '\n'
-        text += f'**{baseSpec}** (~279 ilvl): {baseMaxSpecDps}, \
-            **You** ({charItemLvl} ilvl): {charMaxTheoricalDps}'
+    for baseSpec, baseSpecDps in theoricalDpsDict['base'].items():
+        text += '**{}** (~279 ilvl): {}, **You** ({} ilvl): {}'.format(
+            baseSpec, baseSpecDps, charItemLvl, theoricalDpsDict['calculated'][baseSpec]
+        ) + '\n'
 
     return text
 
@@ -99,14 +112,17 @@ def formatFullCharInfosResponse(charInfos):
 
     baseFormatting = formatCharInfosResponse(charInfos)
 
-    text = f"""
-{baseFormatting}
-{getStatsSummaryText(charInfos['lvlRaceClass'], charInfos['stats'])}
-
-{getTheoricalDpsText(charInfos['theoricalDps'], charInfos['itemsCheck']['avgItemLvl'])}
+    text = """
+{}
+{}
+{}
 *Please note that dps calculation is using a very basic formula ((maxDps/279)\\*yourAverageItemLevel) and is not seriously reliable. 279 is the average max item level available.
 ICC's 30% Damages Buff is taken in account in maxDps.*
-"""
+    """.format(
+        baseFormatting,
+        getStatsSummaryText(charInfos['lvlRaceClass'], charInfos['stats']),
+        getTheoricalDpsText(charInfos['theoricalDps'], charInfos['itemsCheck']['avgItemLvl'])
+    )
 
     return text
 
@@ -117,11 +133,16 @@ def formatGuildInfosResponse(guildInfos):
         return guildInfos
 
     # Wtf this is super ugly but discord is taking tabs into account when posting...
-    text = f"""
-{guildInfos['url']}
-**{guildInfos['guildName']}**
-{guildInfos['guildStatus']}
-{guildInfos['guildPoints']}
-        """
+    text = """
+{}
+**{}**
+{}
+{}
+    """.format(
+        guildInfos['url'],
+        guildInfos['guildName'],
+        guildInfos['guildStatus'],
+        guildInfos['guildPoints']
+    )
 
     return text
