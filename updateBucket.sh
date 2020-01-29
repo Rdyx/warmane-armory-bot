@@ -4,7 +4,8 @@
 
 # Clean bucket to remove any file that should not be there anymore
 # Don't forget to set bucket name as env var
-gsutil rm -r gs://$bucketName/*
+gsutil rm -r gs://$1/*
+
 # Copy files to bucket
 # Don't forget to set bot directory path as env var
-gsutil cp -r $botDirPath/data/ gs://$bucketName
+gsutil cp -r $2/data/*.txt gs://$1/data/
