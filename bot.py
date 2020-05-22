@@ -19,7 +19,7 @@ from src.messageCmds import aboutMessage, welcomeMessage
 from src.utils import incrementCommandsCounter, getCommandCounter
 
 load_dotenv()
-BOT_TOKEN = os.getenv('DISCORD_TOKEN') or os.getenv('DISCORD_TOKEN')
+BOT_TOKEN = os.getenv('DISCORD_TOKEN')
 BOT = commands.Bot(command_prefix='$$')
 
 
